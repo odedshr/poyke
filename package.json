@@ -1,0 +1,51 @@
+{
+	"name": "poyke",
+	"version": "0.0.1",
+	"description": "Decentrelised Communities Hub",
+	"main": "index.js",
+	"scripts": {
+		"start": "npm install && npm run build && node ./dist/server.js",
+		"quick-start": "node ./dist/server.js",
+		"pack": "build --dir",
+		"build": "npm run copy & npm run webpack & npm run style",
+		"buildw": "npm run copy & npm run webpackw & npm run stylew",
+		"webpack": "webpack",
+		"webpackw": "webpack --watch",
+		"style": "sass src/client:bin/www",
+		"stylew": "sass --watch src/client:bin/www",
+		"style-prod": "sass --watch --no-source-map src:bin",
+		"copy": "node ./node_modules/assetomat/index.js",
+		"html": "node ./html-encoder/dist/cli.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://gitlab.com/odedshr/poyke.git"
+	},
+	"keywords": [
+		"nodejs",
+		"vanila.js",
+		"scss"
+	],
+	"author": "Oded Sharon",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://gitlab.com/odedshr/poyke/issues"
+	},
+	"homepage": "https://gitlab.com/odedshr/poyke#readme",
+	"assets": [
+		{
+			"source": "src/client/assets",
+			"target": "bin/www"
+		}
+	],
+	"devDependencies": {
+		"@types/node": "^13.7.4",
+		"assetomat": "^1.0.1",
+		"html-encoder": "^0.2.1",
+		"sass": "^1.26.0",
+		"ts-loader": "^6.2.1",
+		"typescript": "^3.8.2",
+		"webpack": "^4.41.6",
+		"webpack-cli": "^3.3.11"
+	}
+}

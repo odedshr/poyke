@@ -1,3 +1,3 @@
 # poyke
 
-A open-source decentralised event-organising platform
+A open-source decentralised community hub platform
