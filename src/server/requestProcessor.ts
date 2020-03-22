@@ -1,31 +1,57 @@
 import { IncomingMessage } from 'http';
 import { Route, getRoute } from './router';
-import { emailPattern, maskedIdPattern, urlParamPattern } from './validations';
-import { NotFound, BadInput, TooLong } from '../shared/Errors';
+import { NotFound, TooLong, Unauthorized } from '../shared/Errors';
 
 export interface Injectable {}
+
+export class OnInit {
+	method: Function;
+
+	constructor(method: Function) {
+		this.method = method;
+	}
+}
+
+export class OnInitPromise {
+	method: Function;
+
+	constructor(method: Function) {
+		this.method = method;
+	}
+}
 
 export async function processRequest(
 	url: string,
 	request: IncomingMessage,
 	injectables: { [key: string]: Injectable } = {}
 ): Promise<any> {
-	const route: false | Route = getRoute(url);
+	const route: false | Route = getRoute(request.method, url);
 
 	if (!route) {
 		return new NotFound('route', url);
 	}
 
-	const injectablesAndParametes: { [key: string]: any } = Object.assign(
+	const injectablesAndParameters: { [key: string]: any } = Object.assign(
 		{
 			remoteIp: fixToIpV4(getRemoteIP(request))
 		},
-		getParametersFromURL(url, route.url),
-		await getPostData(request),
+		getParametersFromURL(url, route),
+		await getPostData(request).catch(err => {
+			console.error('error getting post data', err);
+			return {};
+		}),
 		injectables
 	);
 
-	return await executeMethodWithInjectable(route.method, injectablesAndParametes);
+	const args: any[] = await getArgumentValues(route.method, injectablesAndParameters, request).catch(err => {
+		console.error(`error fetching arguments for ${url}`, err, err instanceof Unauthorized);
+		throw err;
+	});
+
+	return await executeMethodWithArguments(route.method, args).catch(err => {
+		console.error(`error executing method for for ${url}`, err);
+		throw err;
+	});
 }
 
 function getRemoteIP(request: IncomingMessage): string {
@@ -42,9 +68,9 @@ function fixToIpV4(ip: string) {
 	return ip.substr(0, 7) == '::ffff:' ? ip.substr(7) : ip;
 }
 
-function getParametersFromURL(requestedUrl: string, template: RegExp): { [key: string]: any } {
+function getParametersFromURL(requestedUrl: string, route: Route): { [key: string]: any } {
 	const output: { [key: string]: any } = {};
-	const { keys, url } = getArgumentNamesFromUrlTempalte(template);
+	const { keys, url } = route;
 	let i = 0;
 
 	url.lastIndex = 0;
@@ -57,41 +83,6 @@ function getParametersFromURL(requestedUrl: string, template: RegExp): { [key: s
 	}
 
 	return output;
-}
-
-function getPatternByType(type: string) {
-	switch (type) {
-		case 'id':
-			return maskedIdPattern;
-		case 'email':
-			return emailPattern;
-		case 'string':
-			return '(.+)';
-		case 'integer':
-			return '(\\d+)';
-		default:
-			throw new NotFound('url-param', type);
-	}
-}
-
-function getArgumentNamesFromUrlTempalte(urlTemplate: RegExp): { keys: string[]; url: RegExp } {
-	const keys: string[] = [];
-	let urlString: string = urlTemplate.source;
-	let item;
-
-	while ((item = urlParamPattern.exec(urlString)) !== null) {
-		const [key, type] = item[1].split(':');
-
-		keys.push(key);
-
-		try {
-			urlString = urlString.split(item[0]).join(getPatternByType(type || key));
-		} catch (err) {
-			throw new BadInput(urlTemplate.source, err);
-		}
-	}
-
-	return { keys, url: new RegExp(urlString) };
 }
 
 async function getPostData(request: IncomingMessage): Promise<{ [key: string]: any }> {
@@ -114,11 +105,42 @@ async function getPostData(request: IncomingMessage): Promise<{ [key: string]: a
 	});
 }
 
-async function executeMethodWithInjectable(method: Function, injectables: { [key: string]: Injectable }) {
-	try {
+function getArgumentValues(
+	method: Function,
+	injectables: { [key: string]: Injectable },
+	request: IncomingMessage
+): Promise<any[]> {
+	return new Promise((resolve, reject) => {
 		const argumentNames: string[] = parseArgumentNamesFromFunctionName(method);
-		const argumentValues = argumentNames.map((argName: string) => injectables[argName]);
+		const argumentValues = Promise.all(
+			argumentNames.map(
+				(argName: string) =>
+					new Promise(async (resolveInjectible, rejectInjectible) => {
+						const injectable = injectables[argName];
 
+						try {
+							if (injectable instanceof OnInit) {
+								resolveInjectible(injectable.method(request));
+							} else if (injectable instanceof OnInitPromise) {
+								resolveInjectible(await injectable.method(request));
+							}
+						} catch (err) {
+							return rejectInjectible(err);
+						}
+
+						resolveInjectible(injectable);
+					})
+			)
+		).catch(err => {
+			throw err;
+		});
+
+		resolve(argumentValues);
+	});
+}
+
+async function executeMethodWithArguments(method: Function, argumentValues: any[]) {
+	try {
 		return await method(...argumentValues);
 	} catch (err) {
 		return err;

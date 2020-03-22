@@ -2,20 +2,21 @@
 	"name": "poyke",
 	"version": "0.0.1",
 	"description": "Decentrelised Communities Hub",
-	"main": "index.js",
+	"main": "dist/server.js",
+	"rootFolder": "dist",
 	"scripts": {
-		"start": "npm install && npm run build && node ./dist/server.js",
+		"start": "npm install && npm run rollup && npm run quick-start",
 		"quick-start": "node ./dist/server.js",
 		"pack": "build --dir",
-		"build": "npm run copy & npm run webpack & npm run style",
-		"buildw": "npm run copy & npm run webpackw & npm run stylew",
-		"webpack": "webpack",
-		"webpackw": "webpack --watch",
-		"style": "sass src/client:bin/www",
-		"stylew": "sass --watch src/client:bin/www",
-		"style-prod": "sass --watch --no-source-map src:bin",
+		"build": "npm run copy & npm run rollup & npm run style",
+		"buildw": "npm run copy & npm run rollupw & npm run stylew",
+		"style": "sass src/client:dist/www",
+		"stylew": "sass --watch src/client:dist/www",
+		"style-prod": "sass --watch --no-source-map src:dist",
 		"copy": "node ./node_modules/assetomat/index.js",
-		"html": "node ./html-encoder/dist/cli.js"
+		"html": "node ./html-encoder/dist/cli.js",
+		"rollup": "rollup -c",
+		"rollupw": "rollup -c -w"
 	},
 	"repository": {
 		"type": "git",
@@ -35,17 +36,34 @@
 	"assets": [
 		{
 			"source": "src/client/assets",
-			"target": "bin/www"
+			"target": "dist/www"
 		}
 	],
 	"devDependencies": {
+		"@rollup/plugin-typescript": "^3.0.0",
+		"@types/better-sqlite3": "^5.4.0",
 		"@types/node": "^13.7.4",
 		"assetomat": "^1.0.1",
-		"html-encoder": "^0.2.1",
+		"html-encoder": "^0.2.2",
 		"sass": "^1.26.0",
-		"ts-loader": "^6.2.1",
 		"typescript": "^3.8.2",
-		"webpack": "^4.41.6",
-		"webpack-cli": "^3.3.11"
+		"rollup": "^1.32.0",
+		"tslib": "^1.11.1"
+	},
+	"dependencies": {
+		"@types/nodemailer": "^6.4.0",
+		"@types/nodemailer-direct-transport": "^1.0.31",
+		"@types/passport": "^1.0.2",
+		"@types/passport-local": "^1.0.33",
+		"@types/sendmail": "^1.4.2",
+		"@types/sqlite3": "^3.1.6",
+		"dotenv": "^8.2.0",
+		"jwt-simple": "^0.5.6",
+		"nodemailer": "^6.4.6",
+		"nodemailer-direct-transport": "^3.3.2",
+		"passport": "^0.4.1",
+		"passport-local": "^1.0.0",
+		"sendmail": "^1.6.1",
+		"sqlite3": "^4.1.1"
 	}
 }

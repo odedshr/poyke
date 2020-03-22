@@ -44,14 +44,17 @@ class DetailedError extends Error {
 }
 
 class AlreadyExists extends DetailedError {
+	static status = 409;
 	constructor(varType: string, value: any) {
-		super('already-exists', 409, { key: varType, value: value });
+		super('already-exists', AlreadyExists.status, { key: varType, value: value });
 	}
 }
 
 class BadInput extends DetailedError {
+	static status = 406;
+
 	constructor(key: string, value: any) {
-		super('bad-input', 406, { key: key, value: value });
+		super('bad-input', BadInput.status, { key: key, value: value });
 	}
 
 	toString() {
@@ -60,8 +63,10 @@ class BadInput extends DetailedError {
 }
 
 class Custom extends DetailedError {
+	static status = 500;
+
 	constructor(action: string, description: any, error: Error) {
-		super('custom-error', 500, { key: action, value: description }, error);
+		super('custom-error', Custom.status, { key: action, value: description }, error);
 	}
 
 	toString() {
@@ -69,20 +74,26 @@ class Custom extends DetailedError {
 	}
 }
 class Expired extends DetailedError {
+	static status = 406;
+
 	constructor(varName: string) {
-		super('expired', 406, { key: varName });
+		super('expired', Expired.status, { key: varName });
 	}
 }
 
 class Immutable extends DetailedError {
+	static status = 406;
+
 	constructor(varType: string) {
-		super('immutable', 406, { key: varType });
+		super('immutable', Immutable.status, { key: varType });
 	}
 }
 
 class MissingInput extends DetailedError {
+	static status = 406;
+
 	constructor(varName: string) {
-		super('missing-input', 406, { key: varName });
+		super('missing-input', MissingInput.status, { key: varName });
 	}
 
 	toString() {
@@ -91,8 +102,10 @@ class MissingInput extends DetailedError {
 }
 
 class NotFound extends DetailedError {
+	static status = 404;
+
 	constructor(type: string, id: string) {
-		super('not-found', 404, { key: type, value: id });
+		super('not-found', NotFound.status, { key: type, value: id });
 	}
 
 	toString() {
@@ -101,26 +114,34 @@ class NotFound extends DetailedError {
 }
 
 class NoPermissions extends DetailedError {
+	static status = 401;
+
 	constructor(actionName: string) {
-		super('no-permissions', 401, { action: actionName });
+		super('no-permissions', NoPermissions.status, { action: actionName });
 	}
 }
 
 class SaveFailed extends DetailedError {
+	static status = 500;
+
 	constructor(varName: string, content: any, error: Error) {
-		super('save-failed', 500, { key: varName, value: content }, error);
+		super('save-failed', SaveFailed.status, { key: varName, value: content }, error);
 	}
 }
 
 class System extends DetailedError {
+	static status = 500;
+
 	constructor(error: Error, args: any, url: string) {
-		super('system-error', 500, { args, error, url }, error);
+		super('system-error', System.status, { args, error, url }, error);
 	}
 }
 
 class TooLong extends DetailedError {
+	static status = 406;
+
 	constructor(varName: string, value: any, max = '?') {
-		super('too-long', 406, { key: varName, value: value, max });
+		super('too-long', TooLong.status, { key: varName, value: value, max });
 	}
 
 	toString() {
@@ -129,8 +150,10 @@ class TooLong extends DetailedError {
 }
 
 class TooShort extends DetailedError {
+	static status = 406;
+
 	constructor(varName: string, value: any, min = '?') {
-		super('too-short', 406, { key: varName, value: value, min });
+		super('too-short', TooShort.status, { key: varName, value: value, min });
 	}
 
 	toString() {
@@ -139,8 +162,10 @@ class TooShort extends DetailedError {
 }
 
 class Unauthorized extends DetailedError {
+	static status = 401;
+
 	constructor() {
-		super('unauthorized', 401, {});
+		super('unauthorized', Unauthorized.status, {});
 	}
 }
 
