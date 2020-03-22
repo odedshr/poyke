@@ -8,6 +8,7 @@
 		"start": "npm install && npm run rollup && npm run quick-start",
 		"quick-start": "node ./dist/server.js",
 		"pack": "build --dir",
+		"postinstall": "npm run copy & npm run rollup & npm run style",
 		"build": "npm run copy & npm run rollup & npm run style",
 		"buildw": "npm run copy & npm run rollupw & npm run stylew",
 		"style": "sass src/client:dist/www",
